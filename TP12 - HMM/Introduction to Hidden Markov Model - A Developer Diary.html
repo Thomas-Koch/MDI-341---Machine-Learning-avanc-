@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head >
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Introduction to Hidden Markov Model - A Developer Diary</title>
+<script>(function(d, s, id){
+				 var js, fjs = d.getElementsByTagName(s)[0];
+				 if (d.getElementById(id)) {return;}
+				 js = d.createElement(s); js.id = id;
+				 js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.6";
+				 fjs.parentNode.insertBefore(js, fjs);
+			   }(document, 'script', 'facebook-jssdk'));</script>
+<!-- This site is optimized with the Yoast SEO plugin v13.3 - https://yoast.com/wordpress/plugins/seo/ -->
+<meta name="description" content="Introduction to Hidden Markov Model, foundational concept, usability, intuition of the algorithmic part and some basic examples."/>
+<meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1"/>
+<link rel="canonical" href="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Introduction to Hidden Markov Model - A Developer Diary" />
+<meta property="og:description" content="Introduction to Hidden Markov Model, foundational concept, usability, intuition of the algorithmic part and some basic examples." />
+<meta property="og:url" content="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/" />
+<meta property="og:site_name" content="A Developer Diary" />
+<meta property="article:tag" content="Baum-Welch" />
+<meta property="article:tag" content="Forward Backward" />
+<meta property="article:tag" content="Hidden Markov Model" />
+<meta property="article:tag" content="HMM" />
+<meta property="article:tag" content="Machine Learning" />
+<meta property="article:tag" content="Viterbi" />
+<meta property="article:section" content="Machine Learning" />
+<meta property="article:published_time" content="2019-02-14T03:54:12+00:00" />
+<meta property="article:modified_time" content="2019-02-22T02:24:37+00:00" />
+<meta property="og:updated_time" content="2019-02-22T02:24:37+00:00" />
+<meta property="og:image" content="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-7.jpg?fit=700%2C300" />
+<meta property="og:image:secure_url" content="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-7.jpg?fit=700%2C300" />
+<meta property="og:image:width" content="700" />
+<meta property="og:image:height" content="300" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:description" content="Introduction to Hidden Markov Model, foundational concept, usability, intuition of the algorithmic part and some basic examples." />
+<meta name="twitter:title" content="Introduction to Hidden Markov Model - A Developer Diary" />
+<meta name="twitter:image" content="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-7.jpg?fit=700%2C300" />
+<script type='application/ld+json' class='yoast-schema-graph yoast-schema-graph--main'>{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"http://www.adeveloperdiary.com/#website","url":"http://www.adeveloperdiary.com/","name":"A Developer Diary","inLanguage":"en-US","description":"{about:&quot;code learn and share&quot;}","potentialAction":[{"@type":"SearchAction","target":"http://www.adeveloperdiary.com/?s={search_term_string}","query-input":"required name=search_term_string"}]},{"@type":"ImageObject","@id":"http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/#primaryimage","inLanguage":"en-US","url":"https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-7.jpg?fit=700%2C300","width":700,"height":300,"caption":"Introduction to Hidden Markov Model adeveloperdiary.com"},{"@type":"WebPage","@id":"http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/#webpage","url":"http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/","name":"Introduction to Hidden Markov Model - A Developer Diary","isPartOf":{"@id":"http://www.adeveloperdiary.com/#website"},"inLanguage":"en-US","primaryImageOfPage":{"@id":"http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/#primaryimage"},"datePublished":"2019-02-14T03:54:12+00:00","dateModified":"2019-02-22T02:24:37+00:00","author":{"@id":"http://www.adeveloperdiary.com/#/schema/person/885e5c50cdd6d18076b52e8d9c99c2d8"},"description":"Introduction to Hidden Markov Model, foundational concept, usability, intuition of the algorithmic part and some basic examples.","potentialAction":[{"@type":"ReadAction","target":["http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/"]}]},{"@type":["Person"],"@id":"http://www.adeveloperdiary.com/#/schema/person/885e5c50cdd6d18076b52e8d9c99c2d8","name":"Abhisek Jana","image":{"@type":"ImageObject","@id":"http://www.adeveloperdiary.com/#authorlogo","inLanguage":"en-US","url":"http://0.gravatar.com/avatar/fffbb0e09dc49f3143946e478e901ab5?s=96&d=mm&r=g","caption":"Abhisek Jana"},"sameAs":[]}]}</script>
+<!-- / Yoast SEO plugin. -->
+
+<link rel='dns-prefetch' href='//w.sharethis.com' />
+<link rel='dns-prefetch' href='//maxcdn.bootstrapcdn.com' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="A Developer Diary &raquo; Feed" href="http://www.adeveloperdiary.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="A Developer Diary &raquo; Comments Feed" href="http://www.adeveloperdiary.com/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="A Developer Diary &raquo; Introduction to Hidden Markov Model Comments Feed" href="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/feed/" />
+<!-- This site uses the Google Analytics by ExactMetrics plugin v6.0.2 - Using Analytics tracking - https://www.exactmetrics.com/ -->
+<script type="text/javascript" data-cfasync="false">
+	var em_version         = '6.0.2';
+	var em_track_user      = true;
+	var em_no_track_reason = '';
+	
+	var disableStr = 'ga-disable-UA-63697603-1';
+
+	/* Function to detect opted out users */
+	function __gaTrackerIsOptedOut() {
+		return document.cookie.indexOf(disableStr + '=true') > -1;
+	}
+
+	/* Disable tracking if the opt-out cookie exists. */
+	if ( __gaTrackerIsOptedOut() ) {
+		window[disableStr] = true;
+	}
+
+	/* Opt-out function */
+	function __gaTrackerOptout() {
+	  document.cookie = disableStr + '=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/';
+	  window[disableStr] = true;
+	}
+
+	if ( 'undefined' === typeof gaOptout ) {
+		function gaOptout() {
+			__gaTrackerOptout();
+		}
+	}
+	
+	if ( em_track_user ) {
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','__gaTracker');
+
+window.ga = __gaTracker;		__gaTracker('create', 'UA-63697603-1', 'auto');
+		__gaTracker('set', 'forceSSL', true);
+		__gaTracker('send','pageview');
+		__gaTracker( function() { window.ga = __gaTracker; } );
+	} else {
+		console.log( "" );
+		(function() {
+			/* https://developers.google.com/analytics/devguides/collection/analyticsjs/ */
+			var noopfn = function() {
+				return null;
+			};
+			var noopnullfn = function() {
+				return null;
+			};
+			var Tracker = function() {
+				return null;
+			};
+			var p = Tracker.prototype;
+			p.get = noopfn;
+			p.set = noopfn;
+			p.send = noopfn;
+			var __gaTracker = function() {
+				var len = arguments.length;
+				if ( len === 0 ) {
+					return;
+				}
+				var f = arguments[len-1];
+				if ( typeof f !== 'object' || f === null || typeof f.hitCallback !== 'function' ) {
+					console.log( 'Not running function __gaTracker(' + arguments[0] + " ....) because you are not being tracked. " + em_no_track_reason );
+					return;
+				}
+				try {
+					f.hitCallback();
+				} catch (ex) {
+
+				}
+			};
+			__gaTracker.create = function() {
+				return new Tracker();
+			};
+			__gaTracker.getByName = noopnullfn;
+			__gaTracker.getAll = function() {
+				return [];
+			};
+			__gaTracker.remove = noopfn;
+			window['__gaTracker'] = __gaTracker;
+			window.ga = __gaTracker;		})();
+		}
+</script>
+<!-- / Google Analytics by ExactMetrics -->
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/12.0.0-1\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/12.0.0-1\/svg\/","svgExt":".svg","source":{"concatemoji":"http:\/\/www.adeveloperdiary.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.3.2"}};
+			!function(e,a,t){var r,n,o,i,p=a.createElement("canvas"),s=p.getContext&&p.getContext("2d");function c(e,t){var a=String.fromCharCode;s.clearRect(0,0,p.width,p.height),s.fillText(a.apply(this,e),0,0);var r=p.toDataURL();return s.clearRect(0,0,p.width,p.height),s.fillText(a.apply(this,t),0,0),r===p.toDataURL()}function l(e){if(!s||!s.fillText)return!1;switch(s.textBaseline="top",s.font="600 32px Arial",e){case"flag":return!c([127987,65039,8205,9895,65039],[127987,65039,8203,9895,65039])&&(!c([55356,56826,55356,56819],[55356,56826,8203,55356,56819])&&!c([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]));case"emoji":return!c([55357,56424,55356,57342,8205,55358,56605,8205,55357,56424,55356,57340],[55357,56424,55356,57342,8203,55358,56605,8203,55357,56424,55356,57340])}return!1}function d(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(i=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},o=0;o<i.length;o++)t.supports[i[o]]=l(i[o]),t.supports.everything=t.supports.everything&&t.supports[i[o]],"flag"!==i[o]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[i[o]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(r=t.source||{}).concatemoji?d(r.concatemoji):r.wpemoji&&r.twemoji&&(d(r.twemoji),d(r.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+		<!-- managing ads with Advanced Ads – https://wpadvancedads.com/ -->		<script>
+			//@formatter:off
+						advanced_ads_ready=function(){var fns=[],listener,doc=typeof document==="object"&&document,hack=doc&&doc.documentElement.doScroll,domContentLoaded="DOMContentLoaded",loaded=doc&&(hack?/^loaded|^c/:/^loaded|^i|^c/).test(doc.readyState);if(!loaded&&doc){listener=function(){doc.removeEventListener(domContentLoaded,listener);window.removeEventListener("load",listener);loaded=1;while(listener=fns.shift())listener()};doc.addEventListener(domContentLoaded,listener);window.addEventListener("load",listener)}return function(fn){loaded?setTimeout(fn,0):fns.push(fn)}}();
+						</script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='generate-pro-theme-css'  href='http://www.adeveloperdiary.com/wp-content/themes/generate-pro/style.css?ver=2.1' type='text/css' media='all' />
+<link rel='stylesheet' id='wp-block-library-css'  href='http://www.adeveloperdiary.com/wp-includes/css/dist/block-library/style.min.css?ver=5.3.2' type='text/css' media='all' />
+<style id='wp-block-library-inline-css' type='text/css'>
+.has-text-align-justify{text-align:justify;}
+</style>
+<link rel='stylesheet' id='simple-share-buttons-adder-font-awesome-css'  href='//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css?ver=5.3.2' type='text/css' media='all' />
+<link rel='stylesheet' id='wordpress-popular-posts-css-css'  href='http://www.adeveloperdiary.com/wp-content/plugins/wordpress-popular-posts/assets/css/wpp.css?ver=5.0.2' type='text/css' media='all' />
+<link rel='stylesheet' id='dashicons-css'  href='http://www.adeveloperdiary.com/wp-includes/css/dashicons.min.css?ver=5.3.2' type='text/css' media='all' />
+<link rel='stylesheet' id='google-font-css'  href='//fonts.googleapis.com/css?family=Roboto%3A300%7CRoboto+Condensed%3A400%7CRoboto%3A400%7CRoboto%3A700%7CRoboto%3A500&#038;ver=2.1' type='text/css' media='all' />
+<link rel='stylesheet' id='simple-social-icons-font-css'  href='http://www.adeveloperdiary.com/wp-content/plugins/simple-social-icons/css/style.css?ver=3.0.1' type='text/css' media='all' />
+<link rel='stylesheet' id='jetpack_css-css'  href='http://www.adeveloperdiary.com/wp-content/plugins/jetpack/css/jetpack.css?ver=8.3' type='text/css' media='all' />
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-includes/js/jquery/jquery.js?ver=1.12.4-wp'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var related_posts_js_options = {"post_heading":"h4"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/jetpack/_inc/build/related-posts/related-posts.min.js?ver=20191011'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var exactmetrics_frontend = {"js_events_tracking":"true","download_extensions":"zip,mp3,mpeg,pdf,docx,pptx,xlsx,rar","inbound_paths":"[{\"path\":\"\\\/go\\\/\",\"label\":\"affiliate\"},{\"path\":\"\\\/recommend\\\/\",\"label\":\"affiliate\"}]","home_url":"http:\/\/www.adeveloperdiary.com","hash_tracking":"false"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/google-analytics-dashboard-for-wp/assets/js/frontend.min.js?ver=6.0.2'></script>
+<script id='st_insights_js' type='text/javascript' src='http://w.sharethis.com/button/st_insights.js?publisher=4d48b7c5-0ae3-43d4-bfbe-3ff8c17a8ae6&#038;product=simpleshare'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/advanced-ads/public/assets/js/advanced.js?ver=1.17.5'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var wpp_params = {"sampling_active":"0","sampling_rate":"100","ajax_url":"http:\/\/www.adeveloperdiary.com\/wp-json\/wordpress-popular-posts\/v1\/popular-posts","ID":"958","token":"4e8e30c9b1","debug":""};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/wordpress-popular-posts/assets/js/wpp-5.0.0.min.js?ver=5.0.2'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var advanced_ads_pro_visitor_conditions = {"referrer_cookie_name":"advanced_ads_pro_visitor_referrer","referrer_exdays":"365","page_impr_cookie_name":"advanced_ads_page_impressions","page_impr_exdays":"3650"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/advanced-ads-pro/modules/advanced-visitor-conditions/inc/conditions.min.js?ver=2.2.1'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/advanced-ads-pro/modules/click-fraud-protection/assets/js/cfp.min.js?ver=2.2.1'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/themes/generate-pro/js/responsive-menu.js?ver=1.0.0'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/simple-social-icons/svgxuse.js?ver=1.1.21'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var advanced_ads_pro_ajax_object = {"ajax_url":"http:\/\/www.adeveloperdiary.com\/wp-admin\/admin-ajax.php","lazy_load_module_enabled":"1","lazy_load":{"default_offset":0,"offsets":[]}};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/advanced-ads-pro/modules/cache-busting/inc/base.min.js?ver=2.2.1'></script>
+<link rel='https://api.w.org/' href='http://www.adeveloperdiary.com/wp-json/' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://www.adeveloperdiary.com/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://www.adeveloperdiary.com/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 5.3.2" />
+<link rel='shortlink' href='https://wp.me/p6hUqO-fs' />
+<link rel="alternate" type="application/json+oembed" href="http://www.adeveloperdiary.com/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fwww.adeveloperdiary.com%2Fdata-science%2Fmachine-learning%2Fintroduction-to-hidden-markov-model%2F" />
+<link rel="alternate" type="text/xml+oembed" href="http://www.adeveloperdiary.com/wp-json/oembed/1.0/embed?url=http%3A%2F%2Fwww.adeveloperdiary.com%2Fdata-science%2Fmachine-learning%2Fintroduction-to-hidden-markov-model%2F&#038;format=xml" />
+<style type="text/css"> .enews .screenread {
+	height: 1px;
+    left: -1000em;
+    overflow: hidden;
+    position: absolute;
+    top: -1000em;
+    width: 1px; } </style><script type="text/javascript">
+		;var advadsCfpQueue = [], advadsCfpExpHours = 3;
+		var advadsCfpClickLimit = 3;
+		;
+		var advadsCfpPath = '';
+		var advadsCfpDomain = 'www.adeveloperdiary.com';
+		var advadsCfpAd = function( adID ){
+			if ( 'undefined' == typeof advadsProCfp ) { advadsCfpQueue.push( adID ) } else { advadsProCfp.addElement( adID ) }
+		};
+		</script>
+<link rel='dns-prefetch' href='//i0.wp.com'/>
+<link rel='dns-prefetch' href='//i1.wp.com'/>
+<link rel='dns-prefetch' href='//i2.wp.com'/>
+<style type='text/css'>img#wpstats{display:none}</style><link rel="icon" href="http://www.adeveloperdiary.com/wp-content/themes/generate-pro/images/favicon.ico" />
+<link rel="pingback" href="http://www.adeveloperdiary.com/xmlrpc.php" />
+<script data-ad-client="ca-pub-9350330443439877" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>			<link rel="stylesheet" type="text/css" id="wp-custom-css" href="http://www.adeveloperdiary.com/?custom-css=71be809e70" />
+		</head>
+<body class="post-template-default single single-post postid-958 single-format-standard content-sidebar genesis-breadcrumbs-hidden genesis-footer-widgets-hidden"><div class="site-container"><header class="site-header"><div class="wrap"><div class="title-area"><p class="site-title"><a href="http://www.adeveloperdiary.com/">A Developer Diary</a></p><p class="site-description">{about:&quot;code learn and share&quot;}</p></div><div class="widget-area header-widget-area"><section id="media_image-2" class="widget widget_media_image"><div class="widget-wrap"><img width="740" height="163" src="https://i2.wp.com/www.adeveloperdiary.com/wp-content/uploads/2016/05/adeveloperdiary.com-header-1.jpg?fit=740%2C163" class="image wp-image-692 alignnone attachment-full size-full" alt="" style="max-width: 100%; height: auto;" srcset="https://i2.wp.com/www.adeveloperdiary.com/wp-content/uploads/2016/05/adeveloperdiary.com-header-1.jpg?w=740 740w, https://i2.wp.com/www.adeveloperdiary.com/wp-content/uploads/2016/05/adeveloperdiary.com-header-1.jpg?resize=300%2C66 300w, https://i2.wp.com/www.adeveloperdiary.com/wp-content/uploads/2016/05/adeveloperdiary.com-header-1.jpg?resize=600%2C132 600w" sizes="(max-width: 740px) 100vw, 740px" /></div></section>
+</div></div></header><nav class="nav-primary" aria-label="Main"><div class="wrap"><ul id="menu-home" class="menu genesis-nav-menu menu-primary"><li id="menu-item-70" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-70"><a href="http://www.adeveloperdiary.com/"><span >Home</span></a></li>
+<li id="menu-item-803" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children menu-item-803"><a href="http://www.adeveloperdiary.com/category/data-science/"><span >Data Science</span></a>
+<ul class="sub-menu">
+	<li id="menu-item-804" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-804"><a href="http://www.adeveloperdiary.com/category/data-science/machine-learning/"><span >Machine Learning</span></a></li>
+	<li id="menu-item-1085" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1085"><a href="http://www.adeveloperdiary.com/category/data-science/computer-vision/"><span >Computer Vision</span></a></li>
+	<li id="menu-item-1084" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1084"><a href="http://www.adeveloperdiary.com/category/data-science/deep-learning/"><span >Deep Learning</span></a></li>
+	<li id="menu-item-945" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-945"><a href="http://www.adeveloperdiary.com/category/data-science/visualization/"><span >Visualization</span></a></li>
+</ul>
+</li>
+<li id="menu-item-72" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-72"><a href="http://www.adeveloperdiary.com/category/java/"><span >Java</span></a>
+<ul class="sub-menu">
+	<li id="menu-item-251" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-251"><a href="http://www.adeveloperdiary.com/category/java/cache/"><span >Cache</span></a></li>
+	<li id="menu-item-73" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-73"><a href="http://www.adeveloperdiary.com/category/java/webservice/"><span >WebService</span></a>
+	<ul class="sub-menu">
+		<li id="menu-item-250" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-250"><a href="http://www.adeveloperdiary.com/category/java/webservice/rest/"><span >REST</span></a></li>
+		<li id="menu-item-74" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-74"><a href="http://www.adeveloperdiary.com/category/java/webservice/saaj/"><span >SAAJ</span></a></li>
+	</ul>
+</li>
+	<li id="menu-item-253" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-253"><a href="http://www.adeveloperdiary.com/category/java/server/"><span >Server</span></a></li>
+	<li id="menu-item-665" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-665"><a href="http://www.adeveloperdiary.com/category/java/spring-boot/"><span >Spring Boot</span></a></li>
+	<li id="menu-item-75" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-75"><a href="http://www.adeveloperdiary.com/category/java/xml/"><span >XML</span></a></li>
+</ul>
+</li>
+<li id="menu-item-475" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-475"><a href="http://www.adeveloperdiary.com/category/javascript/"><span >JavaScript</span></a>
+<ul class="sub-menu">
+	<li id="menu-item-351" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-351"><a href="http://www.adeveloperdiary.com/category/angular-js/"><span >Angular JS</span></a>
+	<ul class="sub-menu">
+		<li id="menu-item-352" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-352"><a href="http://www.adeveloperdiary.com/category/angular-js/angular-1-x/"><span >Angular 1.x</span></a></li>
+		<li id="menu-item-713" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-713"><a href="http://www.adeveloperdiary.com/category/angular-js/angular-2-x/"><span >Angular 2.x</span></a></li>
+	</ul>
+</li>
+	<li id="menu-item-476" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-476"><a href="http://www.adeveloperdiary.com/category/d3-js/"><span >D3.js</span></a></li>
+	<li id="menu-item-664" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-664"><a href="http://www.adeveloperdiary.com/category/react-js/"><span >React JS</span></a></li>
+</ul>
+</li>
+<li id="menu-item-666" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-666"><a href="http://www.adeveloperdiary.com/category/bpm/jbpm/"><span >jBPM</span></a></li>
+<li id="menu-item-126" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children menu-item-126"><a href="http://www.adeveloperdiary.com/category/tools/"><span >Tools</span></a>
+<ul class="sub-menu">
+	<li id="menu-item-127" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-127"><a href="http://www.adeveloperdiary.com/category/tools/yeoman/"><span >Yeoman</span></a></li>
+</ul>
+</li>
+<li id="menu-item-252" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-252"><a href="http://www.adeveloperdiary.com/category/tips/"><span >Tips</span></a></li>
+<li id="menu-item-810" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-810"><a href="http://www.adeveloperdiary.com/about-me-1/"><span >About</span></a></li>
+</ul></div></nav><div class="site-inner"><div class="content-sidebar-wrap"><main class="content"><article class="post-958 post type-post status-publish format-standard has-post-thumbnail category-machine-learning tag-baum-welch tag-forward-backward tag-hidden-markov-model tag-hmm tag-machine-learning tag-viterbi entry"><header class="entry-header"><p class="entry-meta"><time class="entry-time">February 13, 2019</time> By <span class="entry-author"><a href="http://www.adeveloperdiary.com/author/adeveloperdiarygmail-com/" class="entry-author-link" rel="author"><span class="entry-author-name">Abhisek Jana</span></a></span> <span class="entry-comments-link"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/#respond">Leave a Comment</a></span> </p><h1 class="entry-title">Introduction to Hidden Markov Model</h1>
+</header><div class="entry-content"><div class="featured-image"><img src="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-7.jpg?resize=700%2C300" alt="Introduction to Hidden Markov Model" class="entry-image"/></div><p>Hidden Markov Model is an Unsupervised* Machine Learning Algorithm which is part of the Graphical Models. However Hidden Markov Model (HMM) often trained using supervised learning method in case training data is available. In this introduction to Hidden Markov Model we will learn about the foundational concept, usability, intuition of the algorithmic part and some basic examples. Only little bit of knowledge on probability will be sufficient for anyone to understand this article fully.</p>
+<p><span id="more-958"></span></p>
+<h1>What kind of problem Hidden Markov Model helps to solve?</h1>
+<p>It&#8217;s important to understand where Hidden Markov Model algorithm actually fits in or used. In short, HMM is a graphical model, which is generally used in predicting states (hidden) using sequential data like weather, text, speech etc. </p><div class="adeve-content_first" style="text-align: center; margin-bottom: 10px; " id="adeve-1632442125"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-9350330443439877"
+     data-ad-slot="5234352564"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div><br style="clear: both; display: block; float: none;"/>
+<p>Let&#8217;s take an example. Say, a dishonest casino uses two dice (assume each die has 6 sides), one of them is fair the other one is unfair. Unfair means one of the die does not have the probabilities defined as <code>(1/6, 1/6, 1/6, 1/6, 1/6,/ 1/6)</code>.The casino randomly rolls any one of the die at any given time.Now, assume we do not know which die was used at what time (the state is hidden). However we know the outcome of the dice (1 to 6), that is, the sequence of throws (observations). Hidden Markov Model can use these observations and predict when the unfair die was used (hidden state).</p>
+<p>In the picture below, </p>
+<ol>
+<li>First plot shows the sequence of throws for each side (1 to 6) of the die (Assume each die has 6 sides). </li>
+<li>2nd plot is the prediction of Hidden Markov Model. Red = Use of Unfair Die.</li>
+<li>3rd plot is the true (actual) data. Red = Use of Unfair Die.</li>
+<li>4th plot shows the difference between predicted and true data. You can see how well HMM performs.</li>
+<li>Ignoring the 5th plot for now, however it shows the prediction confidence.</li>
+</ol>
+<p><img src="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-6.jpg?resize=658%2C700" alt="Introduction to Hidden Markov Model adeveloperdiary.com" width="658" height="700" class="aligncenter size-full wp-image-964" srcset="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-6.jpg?w=658 658w, https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-6.jpg?resize=282%2C300 282w" sizes="(max-width: 658px) 100vw, 658px" data-recalc-dims="1" /></p>
+<h1>Basic Understanding of Markov Model:</h1>
+<p>Before even going through Hidden Markov Model, let&#8217;s try to get an intuition of Markov Model. Later using this concept it will be easier to understand HMM. Markov Model has been used to model randomly changing systems such as weather patterns. In Markov Model all the states are visible or observable. </p>
+<p>The most important point Markov Model establishes is that <em><strong>the future state/event depends only on current state/event</strong></em> and not on any other older states (This is known as <code>Markov Property</code>). For an example, if we consider weather pattern ( sunny, rainy &amp; cloudy ) then we can say tomorrow&#8217;s weather will only depends on today&#8217;s weather and not on y&#8217;days weather. </p>
+<p>Mathematically we can say, the probability of the <code>state</code> at time <code>t</code> will only depend on time step <code>t-1</code>. In other words, probability of <code>s(t)</code> given <code>s(t-1)</code>, that is \( p(s(t) | s(t-1)) \). This is known as <code>First Order Markov Model</code>.</p>
+<p>In case, the probability of the <code>state</code> <code>s</code> at time <code>t</code> depends on time step <code>t-1</code> and <code>t-2</code>, it&#8217;s known as <code>2nd Order Markov Model</code>. As you increase the dependency of past time events the order increases. The 2nd Order Markov Model can be written as \(  p(s(t) | s(t-1), s(t-2)) \).</p>
+<p>Eventually, the idea is to model the joint probability, such as the probability of \( s^T = \{ s_1, s_2, s_3 \} \) where <code>s1</code>, <code>s2</code> and <code>s3</code> happens sequentially. We can use the joint &amp; conditional probability rule and write it as:</p>
+\[<br />
+\begin{align}<br />
+    p(s_3,s_2,s_1) &#038;= p(s_3|s_2,s_1)p(s_2,s_1) \\<br />
+          &#038;= p(s_3|s_2,s_1)p(s_2|s_1)p(s_1) \\<br />
+          &#038;= p(s_3|s_2)p(s_2|s_1)p(s_1)<br />
+\end{align}<br />
+\]
+<p>Below is the diagram of a simple Markov Model as we have defined in above equation.</p>
+<p><img src="https://i1.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-3.jpg?resize=700%2C197" alt="" width="700" height="197" class="size-full wp-image-961" srcset="https://i1.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-3.jpg?w=700 700w, https://i1.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-3.jpg?resize=300%2C84 300w" sizes="(max-width: 700px) 100vw, 700px" data-recalc-dims="1" /> </p>
+<h2>Transition Probabilities:</h2>
+<p>The probability of one state changing to another state is defined as Transition Probability. So in case there are 3 states <code>(Sun, Cloud, Rain)</code> there will be total 9 Transition Probabilities.As you see in the diagram, we have defined all the Transition Probabilities. Transition Probability generally are denoted by \( a_{ij} \) which can be interpreted as the Probability of the system to transition from state <code>i</code> to state <code>j</code> at time step <code>t+1</code>.</p>
+<p>Mathematically,<br />
+\[<br />
+a_{ij} = p(\text{ } s(t+1) = j  \text{     }  | \text{     }s(t) = i \text{ })<br />
+\]</p>
+<p><img src="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-2.jpg?resize=700%2C598" alt="" width="700" height="598" class="size-full wp-image-960" srcset="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-2.jpg?w=700 700w, https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-2.jpg?resize=300%2C256 300w" sizes="(max-width: 700px) 100vw, 700px" data-recalc-dims="1" /></p>
+<p>For an example, in the above state diagram, the Transition Probability from Sun to Cloud is defined as \( a_{12} \). Note that, the transition might happen to the same state also. This is also valid scenario. If we have sun in two consecutive days then the Transition Probability from sun to sun at time step <code>t+1</code> will be \( a_{11} \).</p>
+<p>Generally, the Transition Probabilities are define using a <code>(M x M)</code> matrix, known as <strong>Transition Probability Matrix</strong>. We can define the Transition Probability Matrix for our above example model as:</p>
+\[<br />
+A =  \begin{bmatrix}a_{11} &#038; a_{12} &#038; a_{13} \\ a_{21} &#038; a_{22} &#038; a_{23} \\ a_{31} &#038; a_{32} &#038; a_{33} \end{bmatrix}<br />
+\]
+<p>Once important property to notice, when the machine transitions to another state, the sum of all transition probabilities given the current state should be 1. In our example \( a_{11}+a_{12}+a_{13} \) should be equal to 1.</p><div class="adeve-content_repeat" style="text-align: center; margin-bottom: 10px; " id="adeve-439647891"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-9350330443439877"
+     data-ad-slot="5234352564"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div><br style="clear: both; display: block; float: none;"/>
+<p>Mathematically,<br />
+\[<br />
+\sum_{j=1}^{M} a_{ij} = 1 \; \; \;   \forall i<br />
+\]</p>
+<h2>Initial Probability Distribution:</h2>
+<p>The machine/system has to start from one state. The initial state of Markov Model ( when time step <code>t = 0</code>) is denoted as \( \pi \), it’s a M dimensional row vector. All the probabilities must sum to 1, that is \(  \sum_{i=1}^{M} \pi_i = 1 \; \; \;   \forall i  \). During implementation, we can just assign the same probability to all the states. In our weather example, we can define the initial state as \(  \pi = [ \frac{1}{3} \frac{1}{3} \frac{1}{3}]  \)</p>
+<p>Note, in some cases we may have \( \pi_i = 0 \), since they can not be the initial state.</p>
+<h2>Markov Chain:</h2>
+<p>There are basic 4 types of Markov Models. When the system is fully observable and autonomous it’s called as <code>Markov Chain</code>. What we have learned so far is an example of Markov Chain. Hence we can conclude that Markov Chain consists of following parameters:</p>
+<ul>
+<li>A set of <code>M states</code></li>
+<li>A <code>transition probability</code> matrix A</li>
+<li>An <code>initial probability</code> distribution \( \pi \)</li>
+</ul>
+<h2>Final/Absorbing State:</h2>
+<p>When the transition probabilities of any step to other steps are zero except for itself then its knows an Final/Absorbing State.So when the system enters into the Final/Absorbing State, it never leaves. </p>
+<h1>Hidden Markov Model:</h1>
+<p>In Hidden Markov Model the state of the system will be hidden (unknown), however at every time step <code>t</code> the system in state <code>s(t)</code> will emit an observable/visible symbol <code>v(t)</code>.You can see an example of Hidden Markov Model in the below diagram.</p>
+<p><img src="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-4.jpg?resize=700%2C422" alt="" width="700" height="422" class="size-full wp-image-962" srcset="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-4.jpg?w=700 700w, https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-4.jpg?resize=300%2C181 300w" sizes="(max-width: 700px) 100vw, 700px" data-recalc-dims="1" /></p>
+<p>In our initial example of dishonest casino, the die rolled (fair or unfair) is unknown or hidden. However every time a die is rolled, we know the outcome (which is between 1-6), this is the observing symbol.</p>
+<h3>
+Notes:<br />
+</h3>
+<ul>
+<li>We can define a particular sequence of visible/observable state/symbols as \( V^T = \{ v(1), v(2) … v(T) \} \)</li>
+<li>We will define our model as \( \theta \), so in any state <code>s(t)</code> we have a probability of emitting a particular visible state \( v_k(t) \) </li>
+<li>Since we have access to only the visible states, while <code>s(t)</code>’s are unobservable, such a model is called as <code>Hidden Markov Model</code></li>
+<li>Network like this are called as <code>Finite-State Machine</code></li>
+<li>When they are associated with transition probabilities, they are called as <code>Markov Network</code></li>
+</ul>
+<h2>Emission Probability:</h2>
+<p>Now, let’s redefine our previous example. Assume based on the weather of any day the mood of a person changes from happy to sad. Also assume the person is at a remote place and we do not know how is the weather there. We can only know the mood of the person. So in this case, weather is the <code>hidden state</code> in the model and mood (happy or sad) is the visible/observable symbol. So we should be able to predict the weather by just knowing the mood of the person using HMM. If we redraw the states it would look like this:</p>
+<p><img src="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-5.jpg?resize=700%2C605" alt="" width="700" height="605" class="size-full wp-image-963" srcset="https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-5.jpg?w=700 700w, https://i0.wp.com/www.adeveloperdiary.com/wp-content/uploads/2019/02/Introduction-to-Hidden-Markov-Model-adeveloperdiary.com-5.jpg?resize=300%2C259 300w" sizes="(max-width: 700px) 100vw, 700px" data-recalc-dims="1" /> </p>
+<p>The observable symbols are \( \{ v_1 , v_2 \} \), one of which must be emitted from each state. The probability of emitting any symbol is known as <strong style="text-decoration: underline">Emission Probability</strong>, which are generally defined as \( b_{jk}\). Mathematically, the probability of emitting symbol <code>k</code> given state <code>j</code>.<br />
+\[<br />
+b_{jk} = p(v_k(t) | s_j(t) )<br />
+\]</p>
+<p>Emission probabilities are also defined using <code>MxC</code> matrix, named as <code>Emission Probability Matrix</code>.<br />
+\[<br />
+B = \begin{bmatrix}<br />
+b_{11} &#038;  b_{12} \\<br />
+b_{21} &#038;  b_{22} \\<br />
+b_{31} &#038;  b_{32}<br />
+\end{bmatrix}<br />
+\]</p>
+<p>Again, just like the Transition Probabilities, the Emission Probabilities also sum to 1. </p>
+\[<br />
+\sum_{k=1}^{C} b_{jk} = 1 \; \; \;   \forall j<br />
+\]
+<p>So far we have defined different attributes/properties of Hidden Markov Model. Prediction is the ultimate goal for any model/algorithm. However before jumping into prediction we need to solve two main problem in HMM. </p>
+<h2>Central Issues with Hidden Markov Model:</h2>
+<h3>1. Evaluation Problem:</h3>
+<p>Let’s first define the model ( \( \theta \)  ) as following:<br />
+\[<br />
+\theta \rightarrow s, v, a_{ij},b_{jk}<br />
+\]</p>
+<p>Given the model ( \( \theta \)  ) and Sequence of visible/observable symbol ( \( V^T\) ), we need to determine the probability that a particular sequence of visible states/symbol ( \( V^T\) ) that was generated from the model ( \( \theta \)  ).</p>
+<p>There could be many models \( \{ \theta_1, \theta_2 &#8230; \theta_n \} \). We need to find \( p(V^T | \theta_i) \), then use Bayes Rule to correctly classify the sequence \( V^T \). </p><div class="adeve-content_repeat" style="text-align: center; margin-bottom: 10px; " id="adeve-2112239614"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-9350330443439877"
+     data-ad-slot="5234352564"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div><br style="clear: both; display: block; float: none;"/>
+\[<br />
+p(\theta | V^T  ) = \frac{p(V^T | \theta) p(\theta)}{p(V^T)}<br />
+\]
+<blockquote class="wp-embedded-content" data-secret="c3XIBXXUhp"><p><a href="http://www.adeveloperdiary.com/data-science/machine-learning/forward-and-backward-algorithm-in-hidden-markov-model/">Forward and Backward Algorithm in Hidden Markov Model</a></p></blockquote>
+<p><iframe class="wp-embedded-content" sandbox="allow-scripts" security="restricted" style="position: absolute; clip: rect(1px, 1px, 1px, 1px);" src="http://www.adeveloperdiary.com/data-science/machine-learning/forward-and-backward-algorithm-in-hidden-markov-model/embed/#?secret=c3XIBXXUhp" data-secret="c3XIBXXUhp" width="500" height="282" title="&#8220;Forward and Backward Algorithm in Hidden Markov Model&#8221; &#8212; A Developer Diary" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></p>
+<h3>2. Learning Problem:</h3>
+<p>In general HMM is unsupervised learning process, where number of different visible symbol types are known (happy, sad etc), however the number of hidden states are not known. The idea is to try out different options, however this may lead to more computation and processing time. </p>
+<p>Hence we often use training data and specific number of hidden states (sun, rain, cloud etc) to train the model for faster and better prediction. </p>
+<p>Once the high-level structure (Number of Hidden &#038; Visible States) of the model is defined, we need to estimate the Transition (\( a_{ij}\)) &#038; Emission (\( b_{jk}\)) Probabilities using the training sequences. This is known as the <code>Learning Problem</code>.</p>
+<blockquote class="wp-embedded-content" data-secret="1MsG3RIXlb"><p><a href="http://www.adeveloperdiary.com/data-science/machine-learning/derivation-and-implementation-of-baum-welch-algorithm-for-hidden-markov-model/">Derivation and implementation of Baum Welch Algorithm for Hidden Markov Model</a></p></blockquote>
+<p><iframe class="wp-embedded-content" sandbox="allow-scripts" security="restricted" style="position: absolute; clip: rect(1px, 1px, 1px, 1px);" src="http://www.adeveloperdiary.com/data-science/machine-learning/derivation-and-implementation-of-baum-welch-algorithm-for-hidden-markov-model/embed/#?secret=1MsG3RIXlb" data-secret="1MsG3RIXlb" width="500" height="282" title="&#8220;Derivation and implementation of Baum Welch Algorithm for Hidden Markov Model&#8221; &#8212; A Developer Diary" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></p>
+<p>We will also be using the evaluation problem to solve the Learning Problem. So it&#8217;s important to understand how the Evaluation Problem really works. Another important note, <code>Expectation Maximization</code> (EM) algorithm will be used to estimate the Transition (\( a_{ij}\)) &#038; Emission (\( b_{jk}\)) Probabilities. The Learning Problem is knows as <code>Forward-Backward Algorithm</code> or <code>Baum-Welch Algorithm</code>.</p>
+<h3>3. Decoding Problem:</h3>
+<p>Finally, once we have the estimates for Transition (\( a_{ij}\)) &#038; Emission (\( b_{jk}\)) Probabilities, we can then use the model ( \( \theta \)  ) to predict the Hidden States \( W^T\) which generated the Visible Sequence \( V^T \). The Decoding Problem is also known as <code>Viterbi Algorithm</code>.</p>
+<blockquote class="wp-embedded-content" data-secret="aaASXMRrCf"><p><a href="http://www.adeveloperdiary.com/data-science/machine-learning/implement-viterbi-algorithm-in-hidden-markov-model-using-python-and-r/">Implement Viterbi Algorithm in Hidden Markov Model using Python and R</a></p></blockquote>
+<p><iframe class="wp-embedded-content" sandbox="allow-scripts" security="restricted" style="position: absolute; clip: rect(1px, 1px, 1px, 1px);" src="http://www.adeveloperdiary.com/data-science/machine-learning/implement-viterbi-algorithm-in-hidden-markov-model-using-python-and-r/embed/#?secret=aaASXMRrCf" data-secret="aaASXMRrCf" width="500" height="282" title="&#8220;Implement Viterbi Algorithm in Hidden Markov Model using Python and R&#8221; &#8212; A Developer Diary" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></p>
+<h1>Conclusion:</h1>
+<p>In this Introduction to Hidden Markov Model article we went through some of the intuition behind HMM. Next we will go through each of the three problem defined above and will try to build the algorithm from scratch and also use both Python and R to develop them by ourself without using any library. </p>
+<p>Here are the list of all the articles in this series:</p>
+<ol>
+<li>Introduction to Hidden Markov Model</li>
+<li><a href="http://www.adeveloperdiary.com/data-science/machine-learning/forward-and-backward-algorithm-in-hidden-markov-model/">Forward and Backward Algorithm in Hidden Markov Model</a></li>
+<li><a href="http://www.adeveloperdiary.com/data-science/machine-learning/derivation-and-implementation-of-baum-welch-algorithm-for-hidden-markov-model/">Derivation and implementation of Baum Welch Algorithm for Hidden Markov Model</a></li>
+<li><a href="http://www.adeveloperdiary.com/data-science/machine-learning/implement-viterbi-algorithm-in-hidden-markov-model-using-python-and-r/">Implement Viterbi Algorithm in Hidden Markov Model using Python and R</a></li>
+</ol>
+
+<div id='jp-relatedposts' class='jp-relatedposts' >
+	<h3 class="jp-relatedposts-headline"><em>Related</em></h3>
+</div><div class="adeve-in_article_random" style="text-align: center; margin-bottom: 10px; " id="adeve-823129830"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-9350330443439877"
+     data-ad-slot="5234352564"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div><br style="clear: both; display: block; float: none;"/><script>( window.advanced_ads_ready || jQuery( document ).ready ).call( null, function() {var advads_content_p = jQuery("#adeve-823129830").parent().children("p:not(table p):not(blockquote p):not(div.wp-caption p)").filter(function(){return jQuery.trim(this.innerHTML)!==""});var advads_content_random_p = advads_content_p.eq( Math.round(Math.random() * ( advads_content_p.length - 1) ) );if( advads_content_random_p.length ) { advads.move("#adeve-823129830", advads_content_random_p, { method: "insertAfter" }); }});</script><div class="adeve-random_para_2" style="text-align: center; margin-bottom: 10px; " id="adeve-419063267"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-9350330443439877"
+     data-ad-slot="5234352564"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></div><br style="clear: both; display: block; float: none;"/><script>( window.advanced_ads_ready || jQuery( document ).ready ).call( null, function() {var advads_content_p = jQuery("#adeve-419063267").parent().children("p:not(table p):not(blockquote p):not(div.wp-caption p)").filter(function(){return jQuery.trim(this.innerHTML)!==""});var advads_content_random_p = advads_content_p.eq( Math.round(Math.random() * ( advads_content_p.length - 1) ) );if( advads_content_random_p.length ) { advads.move("#adeve-419063267", advads_content_random_p, { method: "insertAfter" }); }});</script><!--<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+			xmlns:dc="http://purl.org/dc/elements/1.1/"
+			xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
+		<rdf:Description rdf:about="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/"
+    dc:identifier="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/"
+    dc:title="Introduction to Hidden Markov Model"
+    trackback:ping="http://www.adeveloperdiary.com/data-science/machine-learning/introduction-to-hidden-markov-model/trackback/" />
+</rdf:RDF>-->
+</div><footer class="entry-footer"><p class="entry-meta"><span class="entry-categories">Filed Under: <a href="http://www.adeveloperdiary.com/category/data-science/machine-learning/" rel="category tag">Machine Learning</a></span> <span class="entry-tags">Tagged With: <a href="http://www.adeveloperdiary.com/tag/baum-welch/" rel="tag">Baum-Welch</a>, <a href="http://www.adeveloperdiary.com/tag/forward-backward/" rel="tag">Forward Backward</a>, <a href="http://www.adeveloperdiary.com/tag/hidden-markov-model/" rel="tag">Hidden Markov Model</a>, <a href="http://www.adeveloperdiary.com/tag/hmm/" rel="tag">HMM</a>, <a href="http://www.adeveloperdiary.com/tag/machine-learning/" rel="tag">Machine Learning</a>, <a href="http://www.adeveloperdiary.com/tag/viterbi/" rel="tag">Viterbi</a></span></p></footer></article><div class="after-entry widget-area"><section id="custom_html-2" class="widget_text widget widget_custom_html"><div class="widget_text widget-wrap"><div class="textwidget custom-html-widget"><!-- Begin Mailchimp Signup Form -->
+<link href="//cdn-images.mailchimp.com/embedcode/classic-10_7.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+	#mc_embed_signup{background:#eb232f; clear:left; font:20px Helvetica,Arial,sans-serif; }
+	/* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+	   We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+</style>
+<div id="mc_embed_signup" style='background-color: #212121 !important'>
+<form action="https://adeveloperdiary.us19.list-manage.com/subscribe/post?u=17c5708a61cdd1015c22a50fd&amp;id=e63500c485" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+	<h2>Subscribe to stay in loop </h2>
+<div class="indicates-required"><span class="asterisk">*</span> indicates required</div>
+<div class="mc-field-group">
+	<label for="mce-EMAIL">Email Address  <span class="asterisk">*</span>
+</label>
+	<input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL">
+</div>
+	<div id="mce-responses" class="clear">
+		<div class="response" id="mce-error-response" style="display:none"></div>
+		<div class="response" id="mce-success-response" style="display:none"></div>
+	</div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_17c5708a61cdd1015c22a50fd_e63500c485" tabindex="-1" value=""></div>
+    <div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button" style="height:50px;line-height:50px;width:96%;background-color:#eb232f" ></div>
+    </div>
+</form>
+</div>
+<script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
+<!--End mc_embed_signup--></div></div></section>
+</div>	<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="/data-science/machine-learning/introduction-to-hidden-markov-model/#respond" style="display:none;">Cancel reply</a></small></h3><form action="http://www.adeveloperdiary.com/wp-comments-post.php" method="post" id="commentform" class="comment-form" novalidate><p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> Required fields are marked <span class="required">*</span></p><p class="comment-form-comment"><label for="comment">Comment</label> <textarea id="comment" name="comment" cols="45" rows="8" maxlength="65525" required="required"></textarea></p><p class="comment-form-author"><label for="author">Name <span class="required">*</span></label> <input id="author" name="author" type="text" value="" size="30" maxlength="245" required='required' /></p>
+<p class="comment-form-email"><label for="email">Email <span class="required">*</span></label> <input id="email" name="email" type="email" value="" size="30" maxlength="100" aria-describedby="email-notes" required='required' /></p>
+<p class="comment-form-url"><label for="url">Website</label> <input id="url" name="url" type="url" value="" size="30" maxlength="200" /></p>
+<p class="comment-form-cookies-consent"><input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" /> <label for="wp-comment-cookies-consent">Save my name, email, and website in this browser for the next time I comment.</label></p>
+<p class="form-submit"><input name="submit" type="submit" id="submit" class="submit" value="Post Comment" /> <input type='hidden' name='comment_post_ID' value='958' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+</p><p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="798d4f420a" /></p><p style="display: none;"><input type="hidden" id="ak_js" name="ak_js" value="89"/></p></form>	</div><!-- #respond -->
+	<p class="akismet_comment_form_privacy_notice">This site uses Akismet to reduce spam. <a href="https://akismet.com/privacy/" target="_blank" rel="nofollow noopener">Learn how your comment data is processed</a>.</p></main><aside class="sidebar sidebar-primary widget-area" role="complementary" aria-label="Primary Sidebar"><section id="advads_ad_widget-4" class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-2019715970"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:336px;height:280px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="9269692690"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+<section id="enews-ext-5" class="widget enews-widget"><div class="widget-wrap"><div class="enews"><h4 class="widget-title widgettitle">Subscribe</h4>
+<p>Join and get free content delivered automatically each time we publish</p>
+			<form id="subscribeenews-ext-5" action="https://adeveloperdiary.us19.list-manage.com/subscribe/post?u=17c5708a61cdd1015c22a50fd&amp;id=e63500c485" method="post"
+																			target="_blank" onsubmit="if ( subbox1.value == 'First Name') { subbox1.value = ''; } if ( subbox2.value == 'Last Name') { subbox2.value = ''; }" name="enews-ext-5">
+												<label for="subbox" class="screenread">E-Mail Address</label><input type="email" value="" id="subbox" placeholder="E-Mail Address" name="EMAIL"
+																														required="required" />
+								<input type="submit" value="Subscribe" id="subbutton" />
+			</form>
+		</div></div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-1909304534"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+
+<section id="wpp-3" class="widget popular-posts"><div class="widget-wrap">
+<h4 class="widget-title widgettitle">Recent Top Posts</h4>
+<!-- WordPress Popular Posts -->
+<div class="popular-posts-sr"><style>.wpp-cardview { margin-left: 0; margin-right: 0; padding: 0; } .wpp-cardview li { list-style: none; margin: 0 0 1.2rem 0; padding: 0 0 1rem 0; border-bottom: #ddd 1px solid; } .wpp-cardview li:last-of-type, .wpp-cardview li:only-child { margin: 0; padding: 0; border-bottom: none; } .wpp-cardview .wpp-thumbnail-container { position: relative; margin-bottom: .8rem; } .wpp-cardview li .wpp-thumbnail { overflow: hidden; display: block; margin: 0; width: 100%; height: auto; font-size: 0.8rem; line-height: 1; background: #f0f0f0; border: none; } .wpp-cardview li a { text-decoration: none; } .wpp-cardview li a:hover { text-decoration: underline; } .wpp-cardview li .category, .wpp-cardview li .wpp-post-title { display: block; font-weight: bold; } .wpp-cardview li .category { position: absolute; bottom: 0; left: 0; padding: 1em; color: #fff; font-size: 0.7rem; line-height: 1; background: rgba(0, 0, 0, 0.5); } .wpp-cardview li .category:hover { color: #fff; background: rgba(0, 0, 0, 0.8); } .wpp-cardview li .wpp-post-title { margin: 0 0 0.5rem; font-size: 1.2rem; line-height: 1.2; } .wpp-cardview li .wpp-excerpt { margin: 0; font-size: 0.8rem; }</style>
+<ul class="wpp-list wpp-cardview">
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/implement-viterbi-algorithm-in-hidden-markov-model-using-python-and-r/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/998-featured-350x150.jpg" width="350" height="150" alt="Implement Viterbi Algorithm in Hidden Markov Model using Python and R adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/machine-learning/" class="category category-154">Machine Learning</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/implement-viterbi-algorithm-in-hidden-markov-model-using-python-and-r/" class="wpp-post-title" target="_self">Implement Viterbi Algorithm in Hidden Markov Model using Python and R</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/computer-vision/how-to-implement-sobel-edge-detection-using-python-from-scratch/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/1086-featured-350x150.jpg" width="350" height="150" alt="" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/computer-vision/" class="category category-215">Computer Vision</a>, <a href="http://www.adeveloperdiary.com/category/data-science/" class="category category-153">Data Science</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/computer-vision/how-to-implement-sobel-edge-detection-using-python-from-scratch/" class="wpp-post-title" target="_self">How to implement Sobel edge detection using Python from scratch</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/java/how-to-easily-encrypt-and-decrypt-text-in-java/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/174-featured-350x150.jpg" width="350" height="150" alt="How to easily encrypt and decrypt text in Java adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/java/" class="category category-6">Java</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/java/how-to-easily-encrypt-and-decrypt-text-in-java/" class="wpp-post-title" target="_self">How to easily encrypt and decrypt text in Java</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/computer-vision/applying-gaussian-smoothing-to-an-image-using-python-from-scratch/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/1078-featured-350x150.jpg" width="350" height="150" alt="Applying Gaussian Smoothing to an image using Python from scratch adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/computer-vision/" class="category category-215">Computer Vision</a>, <a href="http://www.adeveloperdiary.com/category/data-science/" class="category category-153">Data Science</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/computer-vision/applying-gaussian-smoothing-to-an-image-using-python-from-scratch/" class="wpp-post-title" target="_self">Applying Gaussian Smoothing to an Image using Python from scratch</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/deep-learning/neural-network-with-softmax-in-python/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/1063-featured-350x150.jpg" width="350" height="150" alt="Understanding and implementing Neural Network with SoftMax in Python from scratch adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/" class="category category-153">Data Science</a>, <a href="http://www.adeveloperdiary.com/category/data-science/deep-learning/" class="category category-203">Deep Learning</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/deep-learning/neural-network-with-softmax-in-python/" class="wpp-post-title" target="_self">Understanding  and implementing Neural Network with SoftMax in Python from scratch</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/understand-and-implement-the-backpropagation-algorithm-from-scratch-in-python/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/1017-featured-350x150.jpg" width="350" height="150" alt="" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/" class="category category-153">Data Science</a>, <a href="http://www.adeveloperdiary.com/category/data-science/machine-learning/" class="category category-154">Machine Learning</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/understand-and-implement-the-backpropagation-algorithm-from-scratch-in-python/" class="wpp-post-title" target="_self">Understand and Implement the Backpropagation Algorithm From Scratch In Python</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/forward-and-backward-algorithm-in-hidden-markov-model/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/974-featured-350x150.jpg" width="350" height="150" alt="Forward and Backward Algorithm in Hidden Markov Model adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/machine-learning/" class="category category-154">Machine Learning</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/machine-learning/forward-and-backward-algorithm-in-hidden-markov-model/" class="wpp-post-title" target="_self">Forward and Backward Algorithm in Hidden Markov Model</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/how-to-visualize-gradient-descent-using-contour-plot-in-python/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/933-featured-350x150.jpg" width="350" height="150" alt="How to visualize Gradient Descent using Contour plot in Python adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/" class="category category-153">Data Science</a>, <a href="http://www.adeveloperdiary.com/category/data-science/visualization/" class="category category-178">Visualization</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/how-to-visualize-gradient-descent-using-contour-plot-in-python/" class="wpp-post-title" target="_self">How to visualize Gradient Descent using Contour plot in Python</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/1096-featured-350x150.jpg" width="350" height="150" alt="" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/data-science/computer-vision/" class="category category-215">Computer Vision</a>, <a href="http://www.adeveloperdiary.com/category/data-science/" class="category category-153">Data Science</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/" class="wpp-post-title" target="_self">Implement Canny edge detector using Python from scratch</a> <p class="wpp-excerpt"></p></div></li>
+<li><div class="wpp-thumbnail-container"><a href="http://www.adeveloperdiary.com/java/spring-boot/deploy-spring-boot-application-ibm-liberty-8-5/" target="_self"><img data-img-src="http://www.adeveloperdiary.com/wp-content/uploads/wordpress-popular-posts/636-featured-350x150.jpg" width="350" height="150" alt="How to deploy Spring Boot application in IBM Liberty and WAS 8.5 adeveloperdiary.com" class="wpp-thumbnail wpp_featured wpp-lazyload wpp_cached_thumb" /></a> <a href="http://www.adeveloperdiary.com/category/java/spring-boot/" class="category category-118">Spring Boot</a></div> <div class="wpp-item-data"><a href="http://www.adeveloperdiary.com/java/spring-boot/deploy-spring-boot-application-ibm-liberty-8-5/" class="wpp-post-title" target="_self">How to deploy Spring Boot application in IBM Liberty and WAS 8.5</a> <p class="wpp-excerpt"></p></div></li>
+
+</ul>
+</div>
+</div></section>
+
+<section id="search-3" class="widget widget_search"><div class="widget-wrap"><h4 class="widget-title widgettitle">Search in this website</h4>
+<form class="search-form" method="get" action="http://www.adeveloperdiary.com/" role="search"><input class="search-form-input" type="search" name="s" id="searchform-1" placeholder="Search this website"><input class="search-form-submit" type="submit" value="Search"><meta content="http://www.adeveloperdiary.com/?s={s}"></form></div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-850924454"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:336px;height:280px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="9269692690"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+
+<section id="wpp-2" class="widget popular-posts"><div class="widget-wrap">
+<h4 class="widget-title widgettitle">Top Posts</h4>
+
+<!-- WordPress Popular Posts -->
+
+<ul class="wpp-list">
+<li>
+<a href="http://www.adeveloperdiary.com/java/spring-boot/create-spring-boot-application-step-step/" class="wpp-post-title" target="_self">How to Create Spring Boot Application Step by Step</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">205,621 views</span> | <span class="wpp-comments">9 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/react-js/integrate-react-and-d3/" class="wpp-post-title" target="_self">How to integrate React and D3 &#8211; The right way</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">70,187 views</span> | <span class="wpp-comments">30 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/java/how-to-easily-encrypt-and-decrypt-text-in-java/" class="wpp-post-title" target="_self">How to easily encrypt and decrypt text in Java</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">69,829 views</span> | <span class="wpp-comments">8 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/java/spring-boot/create-restful-webservices-using-spring-boot/" class="wpp-post-title" target="_self">How to create RESTFul Webservices using Spring Boot</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">67,586 views</span> | <span class="wpp-comments">24 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/java/spring-boot/deploy-spring-boot-application-ibm-liberty-8-5/" class="wpp-post-title" target="_self">How to deploy Spring Boot application in IBM Liberty and WAS 8.5</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">65,651 views</span> | <span class="wpp-comments">8 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/java/xml/how-to-convert-xml-to-json-in-java/" class="wpp-post-title" target="_self">How to convert XML to JSON in Java</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">51,334 views</span> | <span class="wpp-comments">4 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/bpm/jbpm/get-started-with-jbpm-kie-and-drools-workbench-part-1/" class="wpp-post-title" target="_self">Get started with jBPM KIE and Drools Workbench – Part 1</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">42,129 views</span> | <span class="wpp-comments">14 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/d3-js/create-stacked-bar-chart-using-d3-js/" class="wpp-post-title" target="_self">How to Create Stacked Bar Chart using d3.js</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">38,862 views</span> | <span class="wpp-comments">15 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/java/spring-boot/an-introduction-to-spring-boot/" class="wpp-post-title" target="_self">An Introduction to Spring Boot</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">35,652 views</span> | <span class="wpp-comments">9 comments</span></span>
+</li>
+<li>
+<a href="http://www.adeveloperdiary.com/d3-js/create-a-simple-donut-chart-using-d3-js/" class="wpp-post-title" target="_self">Create a simple Donut Chart using D3.js</a>
+ <span class="wpp-meta post-stats"><span class="wpp-views">33,239 views</span> | <span class="wpp-comments">5 comments</span></span>
+</li>
+</ul>
+
+</div></section>
+
+<section id="advads_ad_widget-3" class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-1727889513"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+<section id="tag_cloud-2" class="widget widget_tag_cloud"><div class="widget-wrap"><h4 class="widget-title widgettitle">Tags</h4>
+<div class="tagcloud"><a href="http://www.adeveloperdiary.com/category/angular-js/angular-1-x/" class="tag-cloud-link tag-link-31 tag-link-position-1" style="font-size: 18.555555555556pt;" aria-label="Angular 1.x (8 items)">Angular 1.x</a>
+<a href="http://www.adeveloperdiary.com/category/angular-js/angular-2-x/" class="tag-cloud-link tag-link-134 tag-link-position-2" style="font-size: 11.333333333333pt;" aria-label="Angular 2.x (1 item)">Angular 2.x</a>
+<a href="http://www.adeveloperdiary.com/category/angular-js/" class="tag-cloud-link tag-link-30 tag-link-position-3" style="font-size: 8pt;" aria-label="Angular JS (0 items)">Angular JS</a>
+<a href="http://www.adeveloperdiary.com/category/bpm/" class="tag-cloud-link tag-link-79 tag-link-position-4" style="font-size: 8pt;" aria-label="BPM (0 items)">BPM</a>
+<a href="http://www.adeveloperdiary.com/category/java/cache/" class="tag-cloud-link tag-link-28 tag-link-position-5" style="font-size: 11.333333333333pt;" aria-label="Cache (1 item)">Cache</a>
+<a href="http://www.adeveloperdiary.com/category/data-science/computer-vision/" class="tag-cloud-link tag-link-215 tag-link-position-6" style="font-size: 16.666666666667pt;" aria-label="Computer Vision (5 items)">Computer Vision</a>
+<a href="http://www.adeveloperdiary.com/category/d3-js/" class="tag-cloud-link tag-link-88 tag-link-position-7" style="font-size: 21.333333333333pt;" aria-label="D3.js (15 items)">D3.js</a>
+<a href="http://www.adeveloperdiary.com/category/java/database/" class="tag-cloud-link tag-link-164 tag-link-position-8" style="font-size: 11.333333333333pt;" aria-label="DataBase (1 item)">DataBase</a>
+<a href="http://www.adeveloperdiary.com/category/data-science/" class="tag-cloud-link tag-link-153 tag-link-position-9" style="font-size: 19.555555555556pt;" aria-label="Data Science (10 items)">Data Science</a>
+<a href="http://www.adeveloperdiary.com/category/data-science/deep-learning/" class="tag-cloud-link tag-link-203 tag-link-position-10" style="font-size: 16.666666666667pt;" aria-label="Deep Learning (5 items)">Deep Learning</a>
+<a href="http://www.adeveloperdiary.com/category/java/" class="tag-cloud-link tag-link-6 tag-link-position-11" style="font-size: 13.333333333333pt;" aria-label="Java (2 items)">Java</a>
+<a href="http://www.adeveloperdiary.com/category/javascript/" class="tag-cloud-link tag-link-89 tag-link-position-12" style="font-size: 22pt;" aria-label="JavaScript (17 items)">JavaScript</a>
+<a href="http://www.adeveloperdiary.com/category/bpm/jbpm/" class="tag-cloud-link tag-link-80 tag-link-position-13" style="font-size: 14.666666666667pt;" aria-label="jBPM (3 items)">jBPM</a>
+<a href="http://www.adeveloperdiary.com/category/data-science/machine-learning/" class="tag-cloud-link tag-link-154 tag-link-position-14" style="font-size: 19.111111111111pt;" aria-label="Machine Learning (9 items)">Machine Learning</a>
+<a href="http://www.adeveloperdiary.com/category/microservice/" class="tag-cloud-link tag-link-139 tag-link-position-15" style="font-size: 11.333333333333pt;" aria-label="Microservice (1 item)">Microservice</a>
+<a href="http://www.adeveloperdiary.com/category/react-js/" class="tag-cloud-link tag-link-102 tag-link-position-16" style="font-size: 16.666666666667pt;" aria-label="React JS (5 items)">React JS</a>
+<a href="http://www.adeveloperdiary.com/category/java/webservice/rest/" class="tag-cloud-link tag-link-27 tag-link-position-17" style="font-size: 13.333333333333pt;" aria-label="REST (2 items)">REST</a>
+<a href="http://www.adeveloperdiary.com/category/java/webservice/saaj/" class="tag-cloud-link tag-link-8 tag-link-position-18" style="font-size: 11.333333333333pt;" aria-label="SAAJ (1 item)">SAAJ</a>
+<a href="http://www.adeveloperdiary.com/category/java/server/" class="tag-cloud-link tag-link-29 tag-link-position-19" style="font-size: 11.333333333333pt;" aria-label="Server (1 item)">Server</a>
+<a href="http://www.adeveloperdiary.com/category/java/spring-boot/" class="tag-cloud-link tag-link-118 tag-link-position-20" style="font-size: 16.666666666667pt;" aria-label="Spring Boot (5 items)">Spring Boot</a>
+<a href="http://www.adeveloperdiary.com/category/tips/" class="tag-cloud-link tag-link-25 tag-link-position-21" style="font-size: 11.333333333333pt;" aria-label="Tips (1 item)">Tips</a>
+<a href="http://www.adeveloperdiary.com/category/tools/" class="tag-cloud-link tag-link-17 tag-link-position-22" style="font-size: 8pt;" aria-label="Tools (0 items)">Tools</a>
+<a href="http://www.adeveloperdiary.com/category/data-science/visualization/" class="tag-cloud-link tag-link-178 tag-link-position-23" style="font-size: 11.333333333333pt;" aria-label="Visualization (1 item)">Visualization</a>
+<a href="http://www.adeveloperdiary.com/category/java/webservice/" class="tag-cloud-link tag-link-7 tag-link-position-24" style="font-size: 11.333333333333pt;" aria-label="WebService (1 item)">WebService</a>
+<a href="http://www.adeveloperdiary.com/category/java/xml/" class="tag-cloud-link tag-link-15 tag-link-position-25" style="font-size: 13.333333333333pt;" aria-label="XML (2 items)">XML</a>
+<a href="http://www.adeveloperdiary.com/category/tools/yeoman/" class="tag-cloud-link tag-link-24 tag-link-position-26" style="font-size: 11.333333333333pt;" aria-label="Yeoman (1 item)">Yeoman</a></div>
+</div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-1040489603"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+<section id="top-posts-2" class="widget widget_top-posts"><div class="widget-wrap"><h4 class="widget-title widgettitle">Recent Top Posts</h4>
+<ul>				<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/how-to-implement-sobel-edge-detection-using-python-from-scratch/" class="bump-view" data-bump-view="tp">How to implement Sobel edge detection using Python from scratch</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/data-science/machine-learning/implement-viterbi-algorithm-in-hidden-markov-model-using-python-and-r/" class="bump-view" data-bump-view="tp">Implement Viterbi Algorithm in Hidden Markov Model using Python and R</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/applying-gaussian-smoothing-to-an-image-using-python-from-scratch/" class="bump-view" data-bump-view="tp">Applying Gaussian Smoothing to an Image using Python from scratch</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/data-science/deep-learning/neural-network-with-softmax-in-python/" class="bump-view" data-bump-view="tp">Understanding  and implementing Neural Network with SoftMax in Python from scratch</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/java/how-to-easily-encrypt-and-decrypt-text-in-java/" class="bump-view" data-bump-view="tp">How to easily encrypt and decrypt text in Java</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/java/spring-boot/deploy-spring-boot-application-ibm-liberty-8-5/" class="bump-view" data-bump-view="tp">How to deploy Spring Boot application in IBM Liberty and WAS 8.5</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/" class="bump-view" data-bump-view="tp">Implement Canny edge detector using Python from scratch</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/java/webservice/rest/how-to-automate-rest-api-schema-validation-testing-using-postman/" class="bump-view" data-bump-view="tp">How to Automate REST API JSON Schema Validation testing using Postman</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/data-science/machine-learning/understand-and-implement-the-backpropagation-algorithm-from-scratch-in-python/" class="bump-view" data-bump-view="tp">Understand and Implement the Backpropagation Algorithm From Scratch In Python</a>					</li>
+								<li>
+					<a href="http://www.adeveloperdiary.com/java/spring-boot/create-spring-boot-application-step-step/" class="bump-view" data-bump-view="tp">How to Create Spring Boot Application Step by Step</a>					</li>
+				</ul></div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-1332432270"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+		<section id="recent-posts-3" class="widget widget_recent_entries"><div class="widget-wrap">		<h4 class="widget-title widgettitle">Recent Posts</h4>
+		<ul>
+											<li>
+					<a href="http://www.adeveloperdiary.com/data-science/machine-learning/linear-discriminant-analysis-from-theory-to-code/">Linear Discriminant Analysis &#8211; from Theory to Code</a>
+									</li>
+											<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/imagenet-preprocessing-using-tfrecord-and-tensorflow-2-0-data-api/">Imagenet PreProcessing using TFRecord  and Tensorflow 2.0 Data API</a>
+									</li>
+											<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/how-to-prepare-imagenet-dataset-for-image-classification/">How to prepare Imagenet dataset for Image Classification</a>
+									</li>
+											<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/">Implement Canny edge detector using Python from scratch</a>
+									</li>
+											<li>
+					<a href="http://www.adeveloperdiary.com/data-science/computer-vision/how-to-implement-sobel-edge-detection-using-python-from-scratch/">How to implement Sobel edge detection using Python from scratch</a>
+									</li>
+					</ul>
+		</div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-1892637733"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-445922720"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+<section class="widget adeve-widget"><div class="widget-wrap"><div style="text-align: center; " id="adeve-1525975054"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="2000618900"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div></div></section>
+</aside></div></div><script type="text/javascript" src="//downloads.mailchimp.com/js/signup-forms/popup/unique-methods/embed.js" data-dojo-config="usePlainJson: true, isDebug: false"></script><script type="text/javascript">window.dojoRequire(["mojo/signup-forms/Loader"], function(L) { L.start({"baseUrl":"mc.us19.list-manage.com","uuid":"17c5708a61cdd1015c22a50fd","lid":"e63500c485","uniqueMethods":true}) })</script><footer class="site-footer"><div class="wrap"><p><a href="http://www.adeveloperdiary.com/">Copyright &#x000A9;&nbsp;2020 A Developer Diary</a> 
+</p>
+ </div></div></footer></div><script>
+		var advanced_ads_ga_UID = false;
+		var advanced_ads_ga_anonymIP = true;
+advanced_ads_check_adblocker=function(t){function e(t){(window.requestAnimationFrame||window.mozRequestAnimationFrame||window.webkitRequestAnimationFrame||function(t){return setTimeout(t,16)}).call(window,t)}var n=[],a=null;return e(function(){var t=document.createElement("div");t.innerHTML="&nbsp;",t.setAttribute("class","ad_unit ad-unit text-ad text_ad pub_300x250"),t.setAttribute("style","width: 1px !important; height: 1px !important; position: absolute !important; left: 0px !important; top: 0px !important; overflow: hidden !important;"),document.body.appendChild(t),e(function(){var e=window.getComputedStyle&&window.getComputedStyle(t),o=e&&e.getPropertyValue("-moz-binding");a=e&&"none"===e.getPropertyValue("display")||"string"==typeof o&&-1!==o.indexOf("about:");for(var i=0;i<n.length;i++)n[i](a);n=[]})}),function(t){if(null===a)return void n.push(t);t(a)}}(),function(){var t=function(t,e){this.name=t,this.UID=e,this.analyticsObject=null;var n=this,a={hitType:"event",eventCategory:"Advanced Ads",eventAction:"AdBlock",eventLabel:"Yes",nonInteraction:!0,transport:"beacon"};this.analyticsObject="string"==typeof GoogleAnalyticsObject&&"function"==typeof window[GoogleAnalyticsObject]&&window[GoogleAnalyticsObject],!1===this.analyticsObject?(!function(t,e,n,a,o,i,d){t.GoogleAnalyticsObject=o,t[o]=t[o]||function(){(t[o].q=t[o].q||[]).push(arguments)},t[o].l=1*new Date,i=e.createElement(n),d=e.getElementsByTagName(n)[0],i.async=1,i.src="https://www.google-analytics.com/analytics.js",d.parentNode.insertBefore(i,d)}(window,document,"script",0,"_advads_ga"),_advads_ga("create",n.UID,"auto",this.name),advanced_ads_ga_anonymIP&&_advads_ga("set","anonymizeIp",!0),_advads_ga(n.name+".send",a)):(window.console&&window.console.log("Advanced Ads Analytics >> using other's variable named `"+GoogleAnalyticsObject+"`"),window[GoogleAnalyticsObject]("create",n.UID,"auto",this.name),window[GoogleAnalyticsObject]("set","anonymizeIp",!0),window[GoogleAnalyticsObject](n.name+".send",a))};advanced_ads_check_adblocker(function(e){e&&"string"==typeof advanced_ads_ga_UID&&advanced_ads_ga_UID&&new t("advadsTracker",advanced_ads_ga_UID)})}();</script>        <script type="text/javascript">
+            (function(){
+                document.addEventListener('DOMContentLoaded', function(){
+                    let wpp_widgets = document.querySelectorAll('.popular-posts-sr');
+
+                    if ( wpp_widgets ) {
+                        for (let i = 0; i < wpp_widgets.length; i++) {
+                            let wpp_widget = wpp_widgets[i];
+                            WordPressPopularPosts.theme(wpp_widget);
+                        }
+                    }
+                });
+            })();
+        </script>
+                <script>
+            var WPPImageObserver = null;
+
+            function wpp_load_img(img) {
+                if ( ! 'imgSrc' in img.dataset || ! img.dataset.imgSrc )
+                    return;
+
+                img.src = img.dataset.imgSrc;
+
+                if ( 'imgSrcset' in img.dataset ) {
+                    img.srcset = img.dataset.imgSrcset;
+                    img.removeAttribute('data-img-srcset');
+                }
+
+                img.classList.remove('wpp-lazyload');
+                img.removeAttribute('data-img-src');
+                img.classList.add('wpp-lazyloaded');
+            }
+
+            function wpp_observe_imgs(){
+                let wpp_images = document.querySelectorAll('img.wpp-lazyload'),
+                    wpp_widgets = document.querySelectorAll('.popular-posts-sr');
+
+                if ( wpp_images.length || wpp_widgets.length ) {
+                    if ( 'IntersectionObserver' in window ) {
+                        WPPImageObserver = new IntersectionObserver(function(entries, observer) {
+                            entries.forEach(function(entry) {
+                                if (entry.isIntersecting) {
+                                    let img = entry.target;
+                                    wpp_load_img(img);
+                                    WPPImageObserver.unobserve(img);
+                                }
+                            });
+                        });
+
+                        if ( wpp_images.length ) {
+                            wpp_images.forEach(function(image) {
+                                WPPImageObserver.observe(image);
+                            });
+                        }
+
+                        if ( wpp_widgets.length ) {
+                            for (var i = 0; i < wpp_widgets.length; i++) {
+                                let wpp_widget_images = wpp_widgets[i].querySelectorAll('img.wpp-lazyload');
+
+                                if ( ! wpp_widget_images.length && wpp_widgets[i].shadowRoot ) {
+                                    wpp_widget_images = wpp_widgets[i].shadowRoot.querySelectorAll('img.wpp-lazyload');
+                                }
+
+                                if ( wpp_widget_images.length ) {
+                                    wpp_widget_images.forEach(function(image) {
+                                        WPPImageObserver.observe(image);
+                                    });
+                                }
+                            }
+                        }
+                    } /** Fallback for older browsers */
+                    else {
+                        if ( wpp_images.length ) {
+                            for (var i = 0; i < wpp_images.length; i++) {
+                                wpp_load_img(wpp_images[i]);
+                                wpp_images[i].classList.remove('wpp-lazyloaded');
+                            }
+                        }
+
+                        if ( wpp_widgets.length ) {
+                            for (var j = 0; j < wpp_widgets.length; j++) {
+                                let wpp_widget = wpp_widgets[j],
+                                    wpp_widget_images = wpp_widget.querySelectorAll('img.wpp-lazyload');
+
+                                if ( ! wpp_widget_images.length && wpp_widget.shadowRoot ) {
+                                    wpp_widget_images = wpp_widget.shadowRoot.querySelectorAll('img.wpp-lazyload');
+                                }
+
+                                if ( wpp_widget_images.length ) {
+                                    for (var k = 0; k < wpp_widget_images.length; k++) {
+                                        wpp_load_img(wpp_widget_images[k]);
+                                        wpp_widget_images[k].classList.remove('wpp-lazyloaded');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                wpp_observe_imgs();
+
+                // When an ajaxified WPP widget loads,
+                // Lazy load its images
+                document.addEventListener('wpp-onload', function(){
+                    wpp_observe_imgs();
+                });
+            });
+        </script>
+        <style type="text/css" media="screen"></style><script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/jetpack/_inc/build/photon/photon.min.js?ver=20191001'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/simple-share-buttons-adder/js/ssba.js?ver=5.3.2'></script>
+<script type='text/javascript'>
+Main.boot( [] );
+</script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-includes/js/comment-reply.min.js?ver=5.3.2'></script>
+<script type='text/javascript' src='http://www.adeveloperdiary.com/wp-includes/js/wp-embed.min.js?ver=5.3.2'></script>
+<script async="async" type='text/javascript' src='http://www.adeveloperdiary.com/wp-content/plugins/akismet/_inc/form.js?ver=4.1.4'></script>
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=default&#038;ver=1.3.11'></script>
+<div class="adeve-after_first_post_placement" style="text-align: center; margin-bottom: 5px; clear: both; " id="adeve-557797817"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="5941655920"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div><br style="clear: both; display: block; float: none;"/><script>( window.advanced_ads_ready || jQuery( document ).ready ).call( null, function() {advads.move("#adeve-557797817", "div.content-sidebar-wrap > main.content > article.post.type-post:eq(0)", { method: "insertAfter" });});</script><div class="adeve-site_header" style="text-align: center; " id="adeve-1910864891"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:970px;height:90px;" 
+data-ad-client="ca-pub-9350330443439877" 
+data-ad-slot="3877765212"></ins> 
+<script> 
+(adsbygoogle = window.adsbygoogle || []).push({}); 
+</script>
+</div><script>( window.advanced_ads_ready || jQuery( document ).ready ).call( null, function() {advads.move("#adeve-1910864891", "div.site-container > nav.nav-primary > div.wrap", { method: "insertBefore" });});</script><script>var advads_placement_tests = [];
+var advads_passive_ads = {};
+var advads_passive_groups = {};
+var advads_passive_placements = {};
+var advads_ajax_queries = [];
+var advads_has_ads = [["930","ad",null],["930","ad",null],["930","ad",null],["930","ad",null],["930","ad",null],["747","ad",null],["752","ad",null],["747","ad",null],["752","ad",null],["752","ad",null],["752","ad",null],["752","ad",null],["752","ad",null],["752","ad",null],["928","ad",null],["777","ad",null]];
+( window.advanced_ads_ready || jQuery( document ).ready ).call( null, function() {if ( window.advanced_ads_pro ) {advanced_ads_pro.process_passive_cb();} else if ( window.console && window.console.log ) {console.log('Advanced Ads Pro: cache-busting can not be initialized');}});</script><script type='text/javascript' src='https://stats.wp.com/e-202014.js' async='async' defer='defer'></script>
+<script type='text/javascript'>
+	_stq = window._stq || [];
+	_stq.push([ 'view', {v:'ext',j:'1:8.3',blog:'92926518',post:'958',tz:'-4',srv:'www.adeveloperdiary.com'} ]);
+	_stq.push([ 'clickTrackerInit', '92926518', '958' ]);
+</script>
+</body></html>
